@@ -1,22 +1,51 @@
-/*
-
- Також перевантажте по одному математичному та логічному оператору, на ваш вибір (звісно вони мають працювати лише з елементом на виході – це ж черга).
-
- Перевантажте математичні та логічні операції що залишились.
-
-*/
-
-
 #include <iostream>
 #include <string>
 #include <ctime>
-
 
 using namespace std;
 
 // Element
 class Node
 {
+    friend bool operator== (Node &left, Node &right) {
+        return left.data == right.data;
+    }
+
+    friend bool operator!= (Node &left, Node &right) {
+        return left.data != right.data;
+    }
+
+    friend bool operator> (Node &left, Node &right) {
+        return left.data > right.data;
+    }
+
+    friend bool operator< (Node &left, Node &right) {
+        return left.data < right.data;
+    }
+
+    friend bool operator>= (Node &left, Node &right) {
+        return left.data >= right.data;
+    }
+
+    friend bool operator<= (Node &left, Node &right) {
+        return left.data <= right.data;
+    }
+
+    friend int operator+ (Node &left, Node &right) {
+        return left.data + right.data;
+    }
+
+    friend int operator- (Node &left, Node &right) {
+        return left.data - right.data;
+    }
+
+    friend int operator* (Node &left, Node &right) {
+        return left.data * right.data;
+    }
+
+    friend int operator/ (Node &left, Node &right) {
+        return left.data / right.data;
+    }
 
     friend ostream& operator<<(ostream &output, const Node &obj) {
         output << obj.data << endl;
@@ -68,7 +97,6 @@ public:
             back->next = newNode;
             back = newNode;
         }
-
         size++;
     }
 
@@ -107,11 +135,12 @@ public:
 
     Node& operator[](int index)
     {
+        int i = 0;
         Node *temp = front;
-        for(int i = 0; i < index; i++) {
+        while(i != index) {
             temp = temp->next;
+            i++;
         }
-
         return *temp;
     }
 
@@ -154,10 +183,6 @@ class QueueManager {
         return input;
     }
 
-    friend bool operator== (Node &left, Node &right) {
-        return left.data == right.data;
-    }
-
 public:
     QueueManager() {
         for(int i = 0; i < count; i++) {
@@ -168,22 +193,25 @@ public:
 
     Node& operator[](int takenIndex) {
         int index = takenIndex;
-        int dynamicCountOfQueueus = count;
-        while(dynamicCountOfQueueus > 0) {
-            if (!arrayOfQueueByPriority[dynamicCountOfQueueus-1].isEmpty()) {
-                if (arrayOfQueueByPriority[dynamicCountOfQueueus-1].size < index) {
-                    index -= arrayOfQueueByPriority[dynamicCountOfQueueus-1].size;
+        int dynamicCountOfQueues = count;
+
+        while(dynamicCountOfQueues > 0) {
+            if (!arrayOfQueueByPriority[dynamicCountOfQueues-1].isEmpty()) {
+                if (arrayOfQueueByPriority[dynamicCountOfQueues-1].size-1 < index) {
+                    index -= arrayOfQueueByPriority[dynamicCountOfQueues-1].size;
                 } else {
                     break;
                 }
             }
-            dynamicCountOfQueueus--;
+            dynamicCountOfQueues--;
         }
-        return arrayOfQueueByPriority[dynamicCountOfQueueus-1][index];
+        return arrayOfQueueByPriority[dynamicCountOfQueues-1][index];
     }
 
     void push(int data, int priority) {
-        arrayOfQueueByPriority[priority-1].push(data);
+        if (priority > 0 && priority <= count) {
+            arrayOfQueueByPriority[priority-1].push(data);
+        }
     }
 
     int pop() {
@@ -218,7 +246,8 @@ public:
 
 int main()
 {
-    int data, menu, elementPriority;
+    int data, menu, elementPriority, firstElement, secondElement, intResult;
+    bool boolResult;
     QueueManager queue;
     //system("cls");
     srand(time(0));
@@ -226,18 +255,21 @@ int main()
     // Menu
     while (true)
     {
-//        system("clear");
+        // system("clear");
+        cout << endl;
         cout << "Queue: " << queue << endl;
         cout << "Menu: " << endl;
         cout << "1 - Add element" << endl;
         cout << "2 - Add random element with lower priority" << endl;
         cout << "3 - Pop element" << endl;
         cout << "4 - Get top element" << endl;
-        cout << "6 - Quit" << endl;
+        cout << "5 - Make arithmetic operations with elements by index" << endl;
+        cout << "6 - Make logic operations with elements by index" << endl;
+        cout << "7 - Quit" << endl;
         cout << "Your choise: ";
         cin >> menu;
 
-        if (menu == 6)
+        if (menu == 7)
         {
             break;
         }
@@ -259,7 +291,6 @@ int main()
         case 3:
             // Pop element
             cout << "Poped element - " << queue.pop() << endl;
-
             break;
         case 4:
             // Display top element
@@ -267,8 +298,74 @@ int main()
             cout << queue.top() << endl;
             break;
         case 5:
-            cout << queue[0];
-            cout << queue[1];
+            cout << "Menu: " << endl;
+            cout << "1 - +" << endl;
+            cout << "2 - -" << endl;
+            cout << "3 - *" << endl;
+            cout << "4 - /" << endl;
+            cout << "Your choise: ";
+            cin >> menu;
+
+            cout << "Index of first element: ";
+            cin >> firstElement;
+
+            cout << "Index of second element: ";
+            cin >> secondElement;
+
+            switch (menu) {
+                case 1:
+                    intResult = queue[firstElement] + queue[secondElement];
+                    break;
+                case 2:
+                    intResult = queue[firstElement] - queue[secondElement];
+                    break;
+                case 3:
+                    intResult = queue[firstElement] * queue[secondElement];
+                    break;
+                case 4:
+                    intResult = queue[firstElement] / queue[secondElement];
+                    break;
+            }
+            cout << "Result: " << intResult << endl;
+            break;
+        case 6:
+            cout << "Menu: " << endl;
+                cout << "1 - ==" << endl;
+                cout << "2 - !=" << endl;
+                cout << "3 - >" << endl;
+                cout << "4 - <" << endl;
+                cout << "5 - >=" << endl;
+                cout << "6 - <=" << endl;
+                cout << "Your choise: ";
+                cin >> menu;
+
+                cout << "Index of first element: ";
+                cin >> firstElement;
+
+                cout << "Index of second element: ";
+                cin >> secondElement;
+
+                switch (menu) {
+                    case 1:
+                        boolResult = queue[firstElement] == queue[secondElement];
+                        break;
+                    case 2:
+                        boolResult = queue[firstElement] != queue[secondElement];
+                        break;
+                    case 3:
+                        boolResult = queue[firstElement] > queue[secondElement];
+                        break;
+                    case 4:
+                        boolResult = queue[firstElement] < queue[secondElement];
+                        break;
+                    case 5:
+                        boolResult = queue[firstElement] >= queue[secondElement];
+                        break;
+                    case 6:
+                        boolResult = queue[firstElement] <= queue[secondElement];
+                        break;
+                }
+                cout << "Result: " << (boolResult ? "True" : "False") << endl;
             break;
         }
     }
