@@ -1,12 +1,8 @@
 /*
- Вона повинна мати аналоги методів push, top та pop.
 
- Перевантажте >> щоб вони працювали як push з найнижчим пріоритетом.
  Також перевантажте по одному математичному та логічному оператору, на ваш вибір (звісно вони мають працювати лише з елементом на виході – це ж черга).
 
  Перевантажте математичні та логічні операції що залишились.
-
- Нехай черга постійно буде на екрані, щоб можна було спостерігати за її змінами.
 
 */
 
@@ -15,21 +11,26 @@
 #include <string>
 #include <ctime>
 
+
 using namespace std;
 
 // Element
 class Node
 {
+
+    friend ostream& operator<<(ostream &output, const Node &obj) {
+        output << obj.data << endl;
+        return output;
+    }
+
 public:
     int data;
-    int priority;
     Node *prev;
     Node *next;
 
-    Node(int d, int givenPriority)
+    Node(int d)
     {
         data = d;
-        priority = givenPriority;
         prev = 0;
         next = 0;
     }
@@ -38,21 +39,17 @@ public:
 // Queue manager
 class Queue
 {
-private:
+
+public:
     Node *front;
     Node *back;
     int size;
-    static const int maxPrioritet = 4;
-    int currentMaxPrioritetInQueue;
 
-
-public:
     Queue()
     {
         front = 0;
         back = 0;
         size = 0;
-        currentMaxPrioritetInQueue = 0;
     }
 
     bool isEmpty() const
@@ -60,68 +57,36 @@ public:
         return size == 0;
     }
 
-    void push(int data, int priority=1)
-    {
-        if (priority <= maxPrioritet && priority > 0)
-        {
-            currentMaxPrioritetInQueue = priority > currentMaxPrioritetInQueue ? priority : currentMaxPrioritetInQueue;
-            Node *newNode = new Node(data, priority);
-            if (isEmpty())
-            {
-                front = back = newNode;
-            }
-            else
-            {
-                newNode->prev = back;
-                back->next = newNode;
-                back = newNode;
-            }
-            size++;
+    void push(int data) {
+        Node* newNode = new Node(data);
+
+        if (isEmpty()) {
+            front = back = newNode;
         }
         else {
-            cout << "Error!!! Priority is not correct!!!";
+            newNode->prev = back;
+            back->next = newNode;
+            back = newNode;
         }
+
+        size++;
     }
 
-    void display() const
-    {
-        if (isEmpty())
-        {
-            cout << "Queue is empty" << endl;
-        }
-        else
-        {
-            Node *temp = front;
-
-            while (temp != 0)
-            {
-                cout << temp->data << "(" << temp->priority << ")" << ", ";
-                temp = temp->next;
-            }
-
-            cout << endl;
-        }
-    }
-
-    int pop()
-    {
-        if (isEmpty())
-        {
-            cout << "Queue is empty" << endl;
+    int pop() {
+        if (isEmpty()) {
+            cout << "Deque is empty" << endl;
             return -1;
         }
 
         int data = front->data;
-        Node *temp = front;
+        Node* temp = front;
 
-        if (front == back)
-        {
-            front = back = 0;
+        if (front == back) {
+            front = back = nullptr;
         }
-        else
-        {
+        else {
             front = front->next;
-            front->prev = 0;
+            front->prev = nullptr;
         }
 
         size--;
@@ -137,50 +102,142 @@ public:
             return -1;
         }
 
+        return front->data;
+    }
+
+    Node& operator[](int index)
+    {
         Node *temp = front;
-        while (temp->priority != currentMaxPrioritetInQueue) {
+        for(int i = 0; i < index; i++) {
             temp = temp->next;
         }
 
-        return temp->data;
+        return *temp;
     }
 
 
-    // Вивід усієї черги TODO: maybe remove .display method and write all functional here
-    friend ostream& operator<<(ostream &output, const Queue &obj) {
-        obj.display();
+    string stringRepr(int priorityForQueue) const
+    {
+        string response = "";
+        if (isEmpty())
+        {
+            return "";
+        }
+        else
+        {
+            Node *temp = front;
+
+            while (temp != 0)
+            {
+                response += to_string(temp->data) + "(" + to_string(priorityForQueue) + "), ";
+                temp = temp->next;
+            }
+        }
+        return response;
+    }
+};
+
+
+class QueueManager {
+    static const int count = 4;
+    Queue arrayOfQueueByPriority[count];
+
+    friend ostream& operator<<(ostream &output, const QueueManager &obj) {
+        output << obj.stringOfAllQueue();
         return output;
     }
 
     // Заповнення рандомним значенням нового елемента для черги, з найнижчим пріорітетом
-    friend istream& operator>>(istream &input, Queue &obj) {
+    friend istream& operator>>(istream &input, QueueManager &obj) {
         int randomValue = rand() % 100 + 1;
-        obj.push(randomValue);
+        obj.push(randomValue, 1);
         return input;
+    }
+
+    friend bool operator== (Node &left, Node &right) {
+        return left.data == right.data;
+    }
+
+public:
+    QueueManager() {
+        for(int i = 0; i < count; i++) {
+            Queue queue;
+            arrayOfQueueByPriority[i] = queue;
+        }
+    }
+
+    Node& operator[](int takenIndex) {
+        int index = takenIndex;
+        int dynamicCountOfQueueus = count;
+        while(dynamicCountOfQueueus > 0) {
+            if (!arrayOfQueueByPriority[dynamicCountOfQueueus-1].isEmpty()) {
+                if (arrayOfQueueByPriority[dynamicCountOfQueueus-1].size < index) {
+                    index -= arrayOfQueueByPriority[dynamicCountOfQueueus-1].size;
+                } else {
+                    break;
+                }
+            }
+            dynamicCountOfQueueus--;
+        }
+        return arrayOfQueueByPriority[dynamicCountOfQueueus-1][index];
+    }
+
+    void push(int data, int priority) {
+        arrayOfQueueByPriority[priority-1].push(data);
+    }
+
+    int pop() {
+        for(int i = count; i > 0; i--) {
+            if (!arrayOfQueueByPriority[i-1].isEmpty()) {
+                return arrayOfQueueByPriority[i-1].pop();
+            }
+        }
+        return 0;
+    }
+
+    int top() {
+        for(int i = count; i > 0; i--) {
+            if (!arrayOfQueueByPriority[i-1].isEmpty()) {
+                return arrayOfQueueByPriority[i-1].top();
+            }
+        }
+        return 0;
+    }
+
+    string stringOfAllQueue() const
+    {
+        string response = "";
+        for(int i = count; i > 0; i--) {
+            if (!arrayOfQueueByPriority[i - 1].isEmpty()) {
+                response += arrayOfQueueByPriority[i - 1].stringRepr(i);
+            }
+        }
+        return response;
     }
 };
 
 int main()
 {
     int data, menu, elementPriority;
-    Queue queue;
-
+    QueueManager queue;
+    //system("cls");
     srand(time(0));
 
     // Menu
     while (true)
     {
+//        system("clear");
+        cout << "Queue: " << queue << endl;
         cout << "Menu: " << endl;
         cout << "1 - Add element" << endl;
-        cout << "? - Add random element with lower priority" << endl;
-        cout << "2 - Pop element" << endl;
-        cout << "3 - Display queue" << endl;
-        cout << "4 - Display top element" << endl;
-        cout << "5 - Quit" << endl;
+        cout << "2 - Add random element with lower priority" << endl;
+        cout << "3 - Pop element" << endl;
+        cout << "4 - Get top element" << endl;
+        cout << "6 - Quit" << endl;
         cout << "Your choise: ";
         cin >> menu;
 
-        if (menu == 5)
+        if (menu == 6)
         {
             break;
         }
@@ -194,46 +251,24 @@ int main()
             cout << "Add priority to element: ";
             cin >> elementPriority;
             queue.push(data, elementPriority);
-
-            cout << "queue: ";
-            cout << queue;
             break;
         case 2:
-            // Pop element
-            if (!queue.isEmpty())
-            {
-                cout << "Poped element - " << queue.pop() << endl;
-                cout << "queue: ";
-                cout << queue;
-            }
-            else
-            {
-                cout << "queue is empty" << endl;
-            }
+            // Add random element with minimal priority
+            cin >> queue;
             break;
         case 3:
-            // Display queue
-            if (!queue.isEmpty())
-            {
-                cout << "queue: ";
-                cout << queue;
-            }
-            else
-            {
-                cout << "queue is empty" << endl;
-            }
+            // Pop element
+            cout << "Poped element - " << queue.pop() << endl;
+
             break;
         case 4:
             // Display top element
-            if (!queue.isEmpty())
-            {
-                cout << "Top element: ";
-                cout << queue.top() << endl;
-            }
-            else
-            {
-                cout << "queue is empty" << endl;
-            }
+            cout << "Top element: ";
+            cout << queue.top() << endl;
+            break;
+        case 5:
+            cout << queue[0];
+            cout << queue[1];
             break;
         }
     }
