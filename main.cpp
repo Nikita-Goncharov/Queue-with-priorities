@@ -4,7 +4,6 @@
 
 using namespace std;
 
-// Element
 class Node
 {
     friend bool operator== (Node &left, Node &right) {
@@ -65,7 +64,7 @@ public:
     }
 };
 
-// Queue manager
+
 class Queue
 {
 
@@ -191,6 +190,15 @@ public:
         }
     }
 
+    bool isEmpty() const
+    {
+        bool empty = true;
+        for(int i = 0; i < count; i++) {
+            empty = empty && arrayOfQueueByPriority[i].isEmpty();
+        }
+        return empty;
+    }
+
     Node& operator[](int takenIndex) {
         int index = takenIndex;
         int dynamicCountOfQueues = count;
@@ -257,10 +265,16 @@ int main()
     {
         // system("clear");
         cout << endl;
-        cout << "Queue: " << queue << endl;
+        cout << "Queue: ";
+        if (queue.isEmpty()) {
+            cout << "EMPTY" << endl;
+        } else {
+            cout << queue << endl;
+        }
+
         cout << "Menu: " << endl;
         cout << "1 - Add element" << endl;
-        cout << "2 - Add random element with lower priority" << endl;
+        cout << "2 - Add random element with low priority" << endl;
         cout << "3 - Pop element" << endl;
         cout << "4 - Get top element" << endl;
         cout << "5 - Make arithmetic operations with elements by index" << endl;
@@ -290,46 +304,59 @@ int main()
             break;
         case 3:
             // Pop element
-            cout << "Poped element - " << queue.pop() << endl;
+            if (!queue.isEmpty()) {
+                cout << "Poped element - " << queue.pop() << endl;
+            } else {
+                cout << "Queue is empty!!!" << endl;
+            }
             break;
         case 4:
             // Display top element
-            cout << "Top element: ";
-            cout << queue.top() << endl;
+            if (!queue.isEmpty()) {
+                cout << "Top element: " << queue.top() << endl;
+            } else {
+                cout << "Queue is empty!!!" << endl;
+            }
             break;
         case 5:
-            cout << "Menu: " << endl;
-            cout << "1 - +" << endl;
-            cout << "2 - -" << endl;
-            cout << "3 - *" << endl;
-            cout << "4 - /" << endl;
-            cout << "Your choise: ";
-            cin >> menu;
+            if (!queue.isEmpty()) {
+                cout << "Menu: " << endl;
+                cout << "1 - +" << endl;
+                cout << "2 - -" << endl;
+                cout << "3 - *" << endl;
+                cout << "4 - /" << endl;
+                cout << "Your choise: ";
+                cin >> menu;
 
-            cout << "Index of first element: ";
-            cin >> firstElement;
+                cout << "Index of first element: ";
+                cin >> firstElement;
 
-            cout << "Index of second element: ";
-            cin >> secondElement;
+                cout << "Index of second element: ";
+                cin >> secondElement;
 
-            switch (menu) {
-                case 1:
-                    intResult = queue[firstElement] + queue[secondElement];
-                    break;
-                case 2:
-                    intResult = queue[firstElement] - queue[secondElement];
-                    break;
-                case 3:
-                    intResult = queue[firstElement] * queue[secondElement];
-                    break;
-                case 4:
-                    intResult = queue[firstElement] / queue[secondElement];
-                    break;
+                switch (menu) {
+                    case 1:
+                        intResult = queue[firstElement] + queue[secondElement];
+                        break;
+                    case 2:
+                        intResult = queue[firstElement] - queue[secondElement];
+                        break;
+                    case 3:
+                        intResult = queue[firstElement] * queue[secondElement];
+                        break;
+                    case 4:
+                        intResult = queue[firstElement] / queue[secondElement];
+                        break;
+                }
+                cout << "Result: " << intResult << endl;
+            } else {
+                cout << "Queue is empty!!!" << endl;
             }
-            cout << "Result: " << intResult << endl;
+
             break;
         case 6:
-            cout << "Menu: " << endl;
+            if (!queue.isEmpty()) {
+                cout << "Menu: " << endl;
                 cout << "1 - ==" << endl;
                 cout << "2 - !=" << endl;
                 cout << "3 - >" << endl;
@@ -366,6 +393,9 @@ int main()
                         break;
                 }
                 cout << "Result: " << (boolResult ? "True" : "False") << endl;
+            } else {
+                cout << "Queue is empty!!!" << endl;
+            }
             break;
         }
     }
